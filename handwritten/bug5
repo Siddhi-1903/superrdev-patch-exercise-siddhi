@@ -1,0 +1,46 @@
+BUG 5 – Pagination Performed in Memory
+
+1. What was the issue?
+
+In TaskController.java, the application first retrieves all
+matching tasks from the database:
+
+List<Task> allResults =
+    taskRepository.searchTasks(searchTerm, normalizedStatus);
+
+Java then creates the requested page using subList().
+
+This means the database returns every matching record even when
+the user only needs a small page of results.
+
+2. How did I find it?
+
+I traced the search and pagination flow in TaskController.java.
+I found that the repository returns a complete List<Task>, and
+pagination is performed afterward using start, end, and subList().
+
+3. What is the impact?
+
+For a small number of tasks, this is not a major issue.
+However, with a large dataset such as 100,000 or 1,000,000 tasks,
+loading all matching records into application memory can increase
+memory usage and response time.
+
+4. What would be the improvement?
+
+Pagination should ideally be performed by the database using
+LIMIT/OFFSET (or the database-specific equivalent), so that only
+the required records are returned.
+
+5. Why did I not change it?
+
+I considered this a performance improvement rather than a
+functional bug.
+Because the exercise had limited time, I avoided expanding the
+scope into a larger pagination redesign and focused on the
+higher-priority user-facing bugs.
+
+Result:
+
+The issue was documented as a remaining performance risk for
+future improvement.

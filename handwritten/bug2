@@ -1,0 +1,22 @@
+1. What was the issue?
+
+The TaskController.java contained an artificial delay using Thread.sleep().
+The delay was calculated based on the search query length:
+For an empty search query, this caused a 1000 ms (1 second) delay before returning the API response.
+This unnecessarily slowed down every search request.
+
+2. How did I find it?
+I noticed that Thread.sleep() was being executed inside the HTTP request handling method.
+
+
+3. What did I change?
+I removed the entire artificial delay block
+I also removed the unused complexityScore calculation because it was no longer needed.
+
+4. Why did I change it?
+
+Thread.sleep() blocks the HTTP request thread and unnecessarily increases API response time.
+Removing it allows the API to process search requests immediately, improves application performance, and prevents unnecessary server-thread blocking.
+
+5.Result
+Search API requests now return without the artificial 1-second delay.

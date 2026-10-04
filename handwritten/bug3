@@ -1,0 +1,53 @@
+BUG 3 – Frontend Stuck on Loading After API Error
+
+1. What was the issue?
+In useTasks.js, loading was set to true before the API request.
+When the API request failed, the catch block only set the error:
+setError(err.message);
+But setLoading(false) was never called.
+Because of this, loading remained true even after the API failed.
+
+2. How did I find it?
+I checked the error-handling logic in useTasks.js and then checked
+TaskTable.jsx.
+
+TaskTable checks the loading state before the error state:
+
+if (loading) {
+    return <div>Loading tasks...</div>;
+}
+
+if (error) {
+    return <div>Error: {error}</div>;
+}
+
+Therefore, when the API failed:
+
+loading = true
+error = "Request failed..."
+
+The Loading message continued to display and the actual error
+message was never shown.
+
+3. What did I change?
+I added setError(null) before starting the request and used
+finally() to always set loading to false.
+
+The API call now follows:
+
+.then()  -> update tasks
+.catch() -> set error
+.finally() -> set loading to false
+
+4. Why did I change it?
+
+The finally() block executes whether the API request succeeds or
+fails. This ensures that the loading state is always reset.
+
+This allows the user to see the actual error message instead of
+being stuck on "Loading tasks..." forever.
+
+Result:
+
+The frontend now correctly stops loading and displays an error
+message when the API request fails.

@@ -1,0 +1,35 @@
+BUG 1 – Search/Status/Archived Filtering Bug
+
+Problem:
+The SQL query had an AND/OR precedence issue.
+Same problem exsists in 
+db/queries/search_tasks.sql
+db/oracle/task_search_package.sql
+
+The old query was interpreted as:
+
+(archived = FALSE AND title matches)
+OR
+(description matches AND status matches)
+
+Because AND has higher precedence than OR, archived
+tasks could appear in search results and the status
+filter could be ignored.
+
+Fix:
+
+I added parentheses around the title and description
+conditions:
+
+archived = FALSE
+AND (title matches OR description matches)
+AND (status matches)
+
+I applied the same fix to:
+1. TaskRepository.java
+2. search_tasks.sql
+3. task_search_package.sql
+
+Result:
+Archived tasks are excluded and the status filter works
+correctly for both title and description searches.

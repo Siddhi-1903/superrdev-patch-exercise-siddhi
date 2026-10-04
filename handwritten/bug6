@@ -1,0 +1,37 @@
+BUG 6 – Invalid Status Handling
+1. What was the issue?
+
+TaskController.java converts the status query parameter into a TaskStatus enum using:
+TaskStatus.valueOf(status.toUpperCase())
+If the user provides an invalid status such as:
+
+/api/tasks?status=INVALID
+
+valueOf() throws an IllegalArgumentException.
+
+Without handling this exception, the API would return a server-side 500 error instead of a proper client-side validation error.
+
+2. How did I find it?
+
+I inspected the status validation logic in TaskController.java and found that TaskStatus.valueOf() could throw IllegalArgumentException for unsupported status values.
+
+3. What did I change?
+
+I added try/catch around the enum conversion and return 400 Bad Request when an invalid status is provided.
+
+For example:
+
+return ResponseEntity.badRequest().body(
+    Map.of(
+        "error",
+        "Invalid status. Allowed values: OPEN, IN_PROGRESS, DONE"
+    )
+);
+4. Why did I change it?
+
+An invalid request parameter is a client error, so the API should return 400 Bad Request instead of 500 Internal Server Error.
+The response also tells the API consumer which status values are allowed.
+
+5. Result
+
+Invalid status values are now handled gracefully and return HTTP 400 Bad Request with a clear error message.
